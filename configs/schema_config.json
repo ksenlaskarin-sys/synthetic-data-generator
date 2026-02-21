@@ -1,0 +1,431 @@
+{
+  "domain": "INSTAK_ECOMMERCE",
+  "seed": 42,
+  "output_format": "csv",
+
+  "tables": {
+
+    "Users": {
+      "row_count": 100000,
+      "primary_key": "user_id",
+      "columns": {
+        "user_id": { "type": "pk" },
+        "name": { "type": "string" },
+        "email": { "type": "email" },
+        "phone_number": { "type": "phone" },
+        "password_hash": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "enum", "values": ["Bangalore","Mumbai","Delhi","Hyderabad","Chennai"] },
+        "pincode": { "type": "string" },
+        "registration_date": { "type": "timestamp", "range_days": 1500 },
+        "last_login": { "type": "timestamp", "range_days": 30 },
+        "is_active": { "type": "boolean", "probability": 0.9 },
+        "user_type": { "type": "enum", "values": ["CUSTOMER","ADMIN","EMPLOYEE"] },
+        "referral_code": { "type": "string" }
+      }
+    },
+
+    "Categories": {
+      "row_count": 200,
+      "primary_key": "category_id",
+      "columns": {
+        "category_id": { "type": "pk" },
+        "name": { "type": "string" },
+        "parent_category_id": {
+          "type": "fk",
+          "ref_table": "Categories",
+          "ref_column": "category_id",
+          "null_ratio": 0.7
+        },
+        "description": { "type": "string" },
+        "image_url": { "type": "string" }
+      }
+    },
+
+    "Warehouses": {
+      "row_count": 100,
+      "primary_key": "warehouse_id",
+      "columns": {
+        "warehouse_id": { "type": "pk" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "enum", "values": ["Bangalore","Mumbai","Delhi","Hyderabad"] },
+        "latitude": { "type": "decimal", "min": 8.0, "max": 30.0 },
+        "longitude": { "type": "decimal", "min": 70.0, "max": 90.0 },
+        "capacity": { "type": "int", "min": 1000, "max": 20000 },
+        "is_active": { "type": "boolean", "probability": 0.95 }
+      }
+    },
+
+    "Delivery_Partners": {
+      "row_count": 3000,
+      "primary_key": "partner_id",
+      "columns": {
+        "partner_id": { "type": "pk" },
+        "name": { "type": "string" },
+        "phone": { "type": "phone" },
+        "vehicle_type": { "type": "enum", "values": ["BIKE","CAR","VAN"] },
+        "current_location": { "type": "string" },
+        "availability_status": { "type": "enum", "values": ["AVAILABLE","BUSY","OFFLINE"] },
+        "rating": { "type": "decimal", "min": 3.0, "max": 5.0 },
+        "joined_date": { "type": "timestamp", "range_days": 1200 }
+      }
+    },
+
+    "Products": {
+      "row_count": 50000,
+      "primary_key": "product_id",
+      "foreign_keys": {
+        "category_id": { "ref_table": "Categories", "ref_column": "category_id" }
+      },
+      "columns": {
+        "product_id": { "type": "pk" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "decimal", "min": 50, "max": 20000 },
+        "discounted_price": { "type": "decimal", "min": 40, "max": 18000 },
+        "brand": { "type": "string" },
+        "sku": { "type": "string" },
+        "weight": { "type": "decimal", "min": 0.1, "max": 20.0 },
+        "image_url": { "type": "string" },
+        "is_available": { "type": "boolean", "probability": 0.95 },
+        "stock_quantity": { "type": "int", "min": 0, "max": 1000 },
+        "expiry_date": { "type": "timestamp", "range_days": 900 },
+        "tags": { "type": "string" }
+      }
+    },
+
+    "Carts": {
+      "row_count": 80000,
+      "primary_key": "cart_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" }
+      },
+      "columns": {
+        "cart_id": { "type": "pk" },
+        "created_date": { "type": "timestamp", "range_days": 90 },
+        "last_updated": { "type": "timestamp", "range_days": 7 }
+      }
+    },
+
+    "Cart_Items": {
+      "row_count": 200000,
+      "primary_key": "cart_item_id",
+      "foreign_keys": {
+        "cart_id": { "ref_table": "Carts", "ref_column": "cart_id" },
+        "product_id": { "ref_table": "Products", "ref_column": "product_id" }
+      },
+      "columns": {
+        "cart_item_id": { "type": "pk" },
+        "quantity": { "type": "int", "min": 1, "max": 5 }
+      }
+    },
+
+    "Inventory": {
+      "row_count": 200000,
+      "primary_key": "inventory_id",
+      "foreign_keys": {
+        "product_id": { "ref_table": "Products", "ref_column": "product_id" },
+        "warehouse_id": { "ref_table": "Warehouses", "ref_column": "warehouse_id" }
+      },
+      "columns": {
+        "inventory_id": { "type": "pk" },
+        "quantity_available": { "type": "int", "min": 0, "max": 10000 },
+        "quantity_reserved": { "type": "int", "min": 0, "max": 500 },
+        "last_updated": { "type": "timestamp", "range_days": 3 },
+        "reorder_threshold": { "type": "int", "min": 50, "max": 500 }
+      }
+    },
+
+    "Payments": {
+      "row_count": 300000,
+      "primary_key": "payment_id",
+      "columns": {
+        "payment_id": { "type": "pk" },
+        "amount": { "type": "decimal", "min": 100, "max": 20000 },
+        "payment_method": { "type": "enum", "values": ["CARD","UPI","NETBANKING","COD"] },
+        "transaction_id": { "type": "string" },
+        "status": { "type": "enum", "values": ["SUCCESS","FAILED","PENDING"] },
+        "payment_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Orders": {
+      "row_count": 300000,
+      "primary_key": "order_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" },
+        "partner_id": { "ref_table": "Delivery_Partners", "ref_column": "partner_id" },
+        "payment_id": { "ref_table": "Payments", "ref_column": "payment_id" }
+      },
+      "columns": {
+        "order_id": { "type": "pk" },
+        "order_date": { "type": "timestamp", "range_days": 365 },
+        "status": { "type": "enum", "values": ["PLACED","SHIPPED","DELIVERED","CANCELLED"] },
+        "total_amount": { "type": "decimal", "min": 100, "max": 20000 },
+        "discount_applied": { "type": "decimal", "min": 0, "max": 2000 }
+      }
+    },
+
+    "Order_Items": {
+      "row_count": 900000,
+      "primary_key": "order_item_id",
+      "foreign_keys": {
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" },
+        "product_id": { "ref_table": "Products", "ref_column": "product_id" }
+      },
+      "columns": {
+        "order_item_id": { "type": "pk" },
+        "quantity": { "type": "int", "min": 1, "max": 5 },
+        "unit_price": { "type": "decimal", "min": 50, "max": 20000 },
+        "subtotal": { "type": "decimal", "min": 50, "max": 50000 },
+        "is_substituted": { "type": "boolean", "probability": 0.05 }
+      }
+    },
+
+    "Refunds": {
+      "row_count": 50000,
+      "primary_key": "refund_id",
+      "foreign_keys": {
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" },
+        "payment_id": { "ref_table": "Payments", "ref_column": "payment_id" }
+      },
+      "columns": {
+        "refund_id": { "type": "pk" },
+        "refund_amount": { "type": "decimal", "min": 50, "max": 20000 },
+        "refund_reason": { "type": "string" },
+        "refund_status": { "type": "enum", "values": ["INITIATED","COMPLETED","REJECTED"] },
+        "refund_method": { "type": "enum", "values": ["ORIGINAL","WALLET"] },
+        "refund_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Deliveries": {
+      "row_count": 300000,
+      "primary_key": "delivery_id",
+      "foreign_keys": {
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" },
+        "partner_id": { "ref_table": "Delivery_Partners", "ref_column": "partner_id" }
+      },
+      "columns": {
+        "delivery_id": { "type": "pk" },
+        "assigned_time": { "type": "timestamp", "range_days": 365 },
+        "pickup_time": { "type": "timestamp", "range_days": 365 },
+        "delivery_time": { "type": "timestamp", "range_days": 365 },
+        "status": { "type": "enum", "values": ["ASSIGNED","IN_TRANSIT","DELIVERED"] },
+        "route_details": { "type": "string" }
+      }
+    },
+
+    "Promotions": {
+      "row_count": 20000,
+      "primary_key": "promo_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" },
+        "product_id": { "ref_table": "Products", "ref_column": "product_id" }
+      },
+      "columns": {
+        "promo_id": { "type": "pk" },
+        "code": { "type": "string" },
+        "type": { "type": "enum", "values": ["FLAT","PERCENT"] },
+        "discount_value": { "type": "decimal", "min": 50, "max": 500 },
+        "start_date": { "type": "timestamp", "range_days": 365 },
+        "end_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Reviews": {
+      "row_count": 150000,
+      "primary_key": "review_id",
+      "foreign_keys": {
+        "product_id": { "ref_table": "Products", "ref_column": "product_id" },
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" },
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" }
+      },
+      "columns": {
+        "review_id": { "type": "pk" },
+        "rating": { "type": "int", "min": 1, "max": 5 },
+        "comment": { "type": "string" },
+        "review_date": { "type": "timestamp", "range_days": 365 },
+        "is_verified": { "type": "boolean", "probability": 0.85 }
+      }
+    },
+
+    "Search_Logs": {
+      "row_count": 500000,
+      "primary_key": "log_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" }
+      },
+      "columns": {
+        "log_id": { "type": "pk" },
+        "search_query": { "type": "string" },
+        "timestamp": { "type": "timestamp", "range_days": 30 },
+        "results_count": { "type": "int", "min": 0, "max": 500 }
+      }
+    },
+
+    "App_Usage_Logs": {
+      "row_count": 800000,
+      "primary_key": "log_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" }
+      },
+      "columns": {
+        "log_id": { "type": "pk" },
+        "session_id": { "type": "string" },
+        "page_viewed": { "type": "string" },
+        "time_spent": { "type": "int", "min": 1, "max": 600 },
+        "device_type": { "type": "enum", "values": ["ANDROID","IOS","WEB"] },
+        "timestamp": { "type": "timestamp", "range_days": 30 }
+      }
+    },
+
+    "Subscriptions": {
+      "row_count": 40000,
+      "primary_key": "sub_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" }
+      },
+      "columns": {
+        "sub_id": { "type": "pk" },
+        "plan_type": { "type": "enum", "values": ["BASIC","PREMIUM"] },
+        "start_date": { "type": "timestamp", "range_days": 365 },
+        "end_date": { "type": "timestamp", "range_days": 365 },
+        "status": { "type": "enum", "values": ["ACTIVE","EXPIRED"] }
+      }
+    },
+
+    "Finance_Operational_Expenses": {
+      "row_count": 10000,
+      "primary_key": "expense_id",
+      "columns": {
+        "expense_id": { "type": "pk" },
+        "expense_type": { "type": "enum", "values": ["INFRA","MARKETING","OPS"] },
+        "expense_category": { "type": "string" },
+        "expense_amount": { "type": "decimal", "min": 1000, "max": 500000 },
+        "expense_date": { "type": "timestamp", "range_days": 365 },
+        "remarks": { "type": "string" }
+      }
+    },
+
+    "Finance_Orders_Revenue": {
+      "row_count": 300000,
+      "primary_key": "revenue_id",
+      "foreign_keys": {
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" }
+      },
+      "columns": {
+        "revenue_id": { "type": "pk" },
+        "gross_order_amount": { "type": "decimal", "min": 100, "max": 20000 },
+        "discount_amount": { "type": "decimal", "min": 0, "max": 5000 },
+        "net_order_amount": { "type": "decimal", "min": 50, "max": 20000 },
+        "promo_cost": { "type": "decimal", "min": 0, "max": 2000 },
+        "revenue_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Finance_Payments_Settlement": {
+      "row_count": 300000,
+      "primary_key": "settlement_id",
+      "foreign_keys": {
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" },
+        "payment_id": { "ref_table": "Payments", "ref_column": "payment_id" }
+      },
+      "columns": {
+        "settlement_id": { "type": "pk" },
+        "payment_gateway_fee": { "type": "decimal", "min": 10, "max": 1000 },
+        "platform_commission": { "type": "decimal", "min": 50, "max": 2000 },
+        "net_settlement_amount": { "type": "decimal", "min": 50, "max": 20000 },
+        "settlement_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Finance_Refunds_Cost": {
+      "row_count": 50000,
+      "primary_key": "refund_cost_id",
+      "foreign_keys": {
+        "refund_id": { "ref_table": "Refunds", "ref_column": "refund_id" },
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" }
+      },
+      "columns": {
+        "refund_cost_id": { "type": "pk" },
+        "refund_amount": { "type": "decimal", "min": 50, "max": 20000 },
+        "refund_processing_fee": { "type": "decimal", "min": 10, "max": 500 },
+        "refund_loss_amount": { "type": "decimal", "min": 0, "max": 2000 },
+        "refund_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Finance_Delivery_Costs": {
+      "row_count": 300000,
+      "primary_key": "delivery_cost_id",
+      "foreign_keys": {
+        "order_id": { "ref_table": "Orders", "ref_column": "order_id" },
+        "partner_id": { "ref_table": "Delivery_Partners", "ref_column": "partner_id" }
+      },
+      "columns": {
+        "delivery_cost_id": { "type": "pk" },
+        "base_delivery_fee": { "type": "decimal", "min": 50, "max": 500 },
+        "surge_fee": { "type": "decimal", "min": 0, "max": 200 },
+        "tips_paid": { "type": "decimal", "min": 0, "max": 500 },
+        "total_delivery_cost": { "type": "decimal", "min": 50, "max": 1000 },
+        "cost_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Finance_Partner_Payouts": {
+      "row_count": 10000,
+      "primary_key": "payout_id",
+      "foreign_keys": {
+        "partner_id": { "ref_table": "Delivery_Partners", "ref_column": "partner_id" }
+      },
+      "columns": {
+        "payout_id": { "type": "pk" },
+        "total_orders_delivered": { "type": "int", "min": 1, "max": 500 },
+        "total_delivery_earnings": { "type": "decimal", "min": 1000, "max": 100000 },
+        "incentive_amount": { "type": "decimal", "min": 0, "max": 10000 },
+        "penalty_amount": { "type": "decimal", "min": 0, "max": 5000 },
+        "net_payout_amount": { "type": "decimal", "min": 500, "max": 100000 },
+        "payout_period_start": { "type": "timestamp", "range_days": 365 },
+        "payout_period_end": { "type": "timestamp", "range_days": 365 },
+        "payout_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Finance_Employee_Salary": {
+      "row_count": 10000,
+      "primary_key": "salary_id",
+      "foreign_keys": {
+        "user_id": { "ref_table": "Users", "ref_column": "user_id" }
+      },
+      "columns": {
+        "salary_id": { "type": "pk" },
+        "role": { "type": "string" },
+        "base_salary": { "type": "decimal", "min": 20000, "max": 500000 },
+        "bonus": { "type": "decimal", "min": 0, "max": 100000 },
+        "deductions": { "type": "decimal", "min": 0, "max": 50000 },
+        "net_salary": { "type": "decimal", "min": 15000, "max": 500000 },
+        "salary_month": { "type": "timestamp", "range_days": 365 },
+        "payment_date": { "type": "timestamp", "range_days": 365 }
+      }
+    },
+
+    "Finance_Profit_Loss_Summary": {
+      "row_count": 365,
+      "primary_key": "pl_id",
+      "columns": {
+        "pl_id": { "type": "pk" },
+        "period_start_date": { "type": "timestamp", "range_days": 365 },
+        "period_end_date": { "type": "timestamp", "range_days": 365 },
+        "total_revenue": { "type": "decimal", "min": 100000, "max": 5000000 },
+        "total_refunds": { "type": "decimal", "min": 0, "max": 500000 },
+        "total_delivery_cost": { "type": "decimal", "min": 50000, "max": 1000000 },
+        "total_salary_cost": { "type": "decimal", "min": 100000, "max": 2000000 },
+        "total_operational_cost": { "type": "decimal", "min": 50000, "max": 1500000 },
+        "net_profit_loss": { "type": "decimal", "min": -1000000, "max": 2000000 },
+        "calculated_date": { "type": "timestamp", "range_days": 365 }
+      }
+    }
+  }
+}
